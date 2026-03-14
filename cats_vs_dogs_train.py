@@ -1,37 +1,37 @@
-import tensorflow as tf
-import tensorflow_datasets as tfds
-import numpy as np
-import matplotlib.pyplot as plt
-from tensorflow.keras.preprocessing import image
-import os
-import shutil
+import tensorflow as tf #для обучения
+import tensorflow_datasets as tfds 
+import numpy as np # Для работы с массивами
+import matplotlib.pyplot as plt # Для отображения изображений
+from tensorflow.keras.preprocessing import image # Для работы с изображениями
+import os 
+import shutil # для работы с директориями
 
 # --- 1. Настройки ---
 IMG_SIZE = 96  # Уменьшено для ускорения на CPU
 BATCH_SIZE = 12  # Уменьшено для экономии памяти
 EPOCHS = 10  # Уменьшено для быстрого теста
-DATA_NAME = 'cats_vs_dogs'
-CACHE_DIR = '/home/yargus/tensorflow_datasets'
+DATA_NAME = 'cats_vs_dogs' # Название датасета
+CACHE_DIR = '/home/yargus/tensorflow_datasets' # Путь до кэша с датасетом
 
 # --- 2. Очистка кэша (если поврежден) ---
 dataset_path = os.path.join(CACHE_DIR, DATA_NAME) # Создание пути до датасета обучения
 if os.path.exists(dataset_path):
-    if not os.path.exists(os.path.join(dataset_path, 'dataset_info.json')):
+    if not os.path.exists(os.path.join(dataset_path, 'dataset_info.json')): # Проверяет есть ли файл dataset_info.json
         print("⚠️ Обнаружен поврежденный кэш. Удаляем...")
         shutil.rmtree(dataset_path) # Удаляет файл если он поврежден
 
 # --- 3. Загрузка данных ---
-print("Загрузка датасета... (первый раз может занять 5-10 минут)")
+print("Загрузка датасета... (первый раз может занять 5-10 минут)") 
 try:
     dataset, info = tfds.load(
         DATA_NAME, 
         with_info=True, 
         as_supervised=True,
-        split=['train[:80%]', 'train[80%:]'],
-        data_dir=CACHE_DIR
+        split=['train[:80%]', 'train[80%:]'], #
+        data_dir=CACHE_DIR 
     )
-    train_ds, val_ds = dataset
-    print(f"✅ Датасет загружен. Классы: {info.features['label'].names}")
+    train_ds, val_ds = dataset  
+    print(f"✅ Датасет загружен. Классы: {info.features['label'].names}") # вывод 
 except Exception as e:
     print(f"❌ Ошибка загрузки: {e}")
     print("Попробуйте: pip install --upgrade tensorflow-datasets")
@@ -40,7 +40,7 @@ except Exception as e:
 # --- 4. Предобработка ---
 def preprocess(image, label):
     image = tf.image.resize(image, [IMG_SIZE, IMG_SIZE])
-    image = tf.cast(image, tf.float32) / 255.0
+    image = tf.cast(image, tf.float32) / 255.0 #преобразование в вещественное числ
     return image, label
 
 train_ds = train_ds.map(preprocess).cache().shuffle(1000).batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
